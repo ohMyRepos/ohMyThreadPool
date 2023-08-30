@@ -21,7 +21,7 @@ class ThreadPool(object):
                 func = task['func']
                 args = task['args']
                 print(f"_pool_inner_worker No.{tid} is working on task {args}...")
-                res = func(args)
+                res = func(*args)
 
                 self._lock.acquire()
                 self._results.append(res)
@@ -54,21 +54,27 @@ class ThreadPool(object):
         self._tasks.join()
         return self._results
 
+    def clean(self):
+        self._lock.acquire()
+        self._results = list()
+        self._lock.release()
 
-def real_world_worker(args):
+
+def real_world_worker(idx, *args, **kwargs):
     time.sleep(1)
-    return args[0]
+    return idx
 
 def main():
     tp = ThreadPool(max_workers=5)
 
-    for i in range(20):
-        tp.submit(real_world_worker, i)
+    for i, _ in enumerate(range(20), 1):
+        tp.submit(real_world_worker, i, 'real')
     result = tp.result()
     print(result)
 
-    for i in range(20):
-        tp.submit(real_world_worker, i)
+    tp.clean()
+    for i, _ in enumerate(range(20), 1):
+        tp.submit(real_world_worker, i, 'world')
     result = tp.result()
     print(result)
 
