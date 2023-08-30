@@ -11,7 +11,7 @@ def print(*args, **kwargs):
 
 
 class ThreadPool(object):
-    def _pool_inner_worker(self, id):
+    def _pool_inner_worker(self, tid):
         while True:
             # always loop, waiting for task
             while not self._tasks.empty():
@@ -20,7 +20,7 @@ class ThreadPool(object):
                 # do real world work here
                 func = task['func']
                 args = task['args']
-                print(f"_pool_inner_worker No.{id} is working on task {args}...")
+                print(f"_pool_inner_worker No.{tid} is working on task {args}...")
                 res = func(args)
 
                 self._lock.acquire()
@@ -61,7 +61,13 @@ def real_world_worker(args):
 
 def main():
     tp = ThreadPool(max_workers=5)
-    for i in range(50):
+
+    for i in range(20):
+        tp.submit(real_world_worker, i)
+    result = tp.result()
+    print(result)
+
+    for i in range(20):
         tp.submit(real_world_worker, i)
     result = tp.result()
     print(result)
