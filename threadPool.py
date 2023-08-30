@@ -36,19 +36,19 @@ class ThreadPool(object):
         self._tasks = queue.Queue()
         self._thrs = list()
         self._results = list()
-        for i in range(self._max_workers):
-            t = threading.Thread(target=self._pool_inner_worker, args=(i,))
-            t.daemon = True
-            self._thrs.append(t)
-
-        # start to roll
-        [t.start() for t in self._thrs]
 
     def submit(self, func, *args):
         self._tasks.put(dict(
             func=func,
             args=args,
         ))
+        
+        if len(self._thrs) < self._max_workers:
+            tid = len(self._thrs)
+            t = threading.Thread(target=self._pool_inner_worker, args=(tid,))
+            t.daemon = True
+            self._thrs.append(t)
+            t.start()
 
     def result(self):
         self._tasks.join()
@@ -61,7 +61,7 @@ class ThreadPool(object):
 
 
 def real_world_worker(idx, *args, **kwargs):
-    time.sleep(1)
+    time.sleep(0.1)
     return idx
 
 def main():
@@ -80,3 +80,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+from concurrent.futures import ThreadPoolExecutor
+
+pool = ThreadPoolExecutor(max_workers=5)
