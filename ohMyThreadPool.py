@@ -11,7 +11,7 @@ def print(*args, **kwargs):
     plock.release()
 
 
-class ThreadPool(object):
+class ohMyThreadPool(object):
     def _pool_inner_worker(self, tid):
         while True:
             # always looping, waiting for task
@@ -66,17 +66,17 @@ def real_world_worker(idx, *args, **kwargs):
     return idx
 
 def main():
-    tp = ThreadPool(max_workers=5)
+    omtp = ohMyThreadPool(max_workers=5)
 
     for i, _ in enumerate(range(20), 1):
-        tp.submit(real_world_worker, i, 'real')
-    result = tp.result()
+        omtp.submit(real_world_worker, i, 'real')
+    result = omtp.result()
     print(result)
 
-    tp.clean()
+    omtp.clean()
     for i, _ in enumerate(range(20), 1):
-        tp.submit(real_world_worker, i, 'world')
-    result = tp.result()
+        omtp.submit(real_world_worker, i, 'world')
+    result = omtp.result()
     print(result)
 
 if __name__ == '__main__':
