@@ -4,6 +4,7 @@ import threading
 plock = threading.Lock()
 pprint = print
 
+
 def print(*args, **kwargs):
     plock.acquire()
     pprint(*args, **kwargs)
@@ -13,21 +14,20 @@ def print(*args, **kwargs):
 class ThreadPool(object):
     def _pool_inner_worker(self, tid):
         while True:
-            # always loop, waiting for task
-            while not self._tasks.empty():
-                task = self._tasks.get()
+            # always looping, waiting for task
+            task = self._tasks.get()
 
-                # do real world work here
-                func = task['func']
-                args = task['args']
-                print(f"_pool_inner_worker No.{tid} is working on task {args}...")
-                res = func(*args)
+            # do real world work here
+            func = task['func']
+            args = task['args']
+            print(f"_pool_inner_worker No.{tid} is working on task {args}...")
+            res = func(*args)
 
-                self._lock.acquire()
-                self._results.append(res)
-                self._lock.release()
+            self._lock.acquire()
+            self._results.append(res)
+            self._lock.release()
 
-                self._tasks.task_done()
+            self._tasks.task_done()
 
     def __init__(self, max_workers=5):
         import queue
@@ -42,7 +42,8 @@ class ThreadPool(object):
             func=func,
             args=args,
         ))
-        
+
+        # lazy creation
         if len(self._thrs) < self._max_workers:
             tid = len(self._thrs)
             t = threading.Thread(target=self._pool_inner_worker, args=(tid,))
@@ -81,6 +82,5 @@ def main():
 if __name__ == '__main__':
     main()
 
-from concurrent.futures import ThreadPoolExecutor
-
-pool = ThreadPoolExecutor(max_workers=5)
+# from concurrent.futures import ThreadPoolExecutor
+# pool = ThreadPoolExecutor(max_workers=5)
